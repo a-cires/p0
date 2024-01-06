@@ -36,6 +36,12 @@ BOT_ID=""
 GROUP_ID="98324520" # our GroupMe chat id
 ACCESS_TOKEN=""
 OPENAI_API_KEY=""
+SENDER_ID=""  # Obtain using --config flag
+BOT_SENDER_ID=""  # Obtain using --config flag
+DEBUG="False"
+NO_SEND="False"
+RESPOND_ALL="False"
+SELF_REPLY="False"
 ```
 
 - `BOT_ID` is the id of your bot, you can find this on the [dev page](https://dev.groupme.com/bots)
@@ -76,7 +82,7 @@ We have provided you with an outline of the bot in [`bot.py`](./groupme-bot/bot.
 - [x] create 1 (or more, for extra-credit) additional features that you think would be cool
   - you may incorporate other API's (i.e. [Giphy](https://developers.giphy.com/docs/api/endpoint#search))
   - you can have the bot perhaps have tell the weather of a particular city
-- [ ] create a doc (markdown, `*.md` file) that outlines the features of your bot, how to run it
+- [x] create a doc (markdown, `*.md` file) that outlines the features of your bot, how to run it
   - please put this file in the [`groupme-bot`](./groupme-bot) folder and name it `README.md`
   - refer to markdown syntax [here](https://www.markdownguide.org/basic-syntax/)
 
@@ -88,17 +94,24 @@ source venv/bin/activate # for mac/linux
 venv\Scripts\activate # for windows
 
 # run bot
-python3 bot.py
+python3 bot.py --config "Your Groupme Name" # outputs SENDER_ID and BOT_SENDER_ID
+
+# Store given SENDER_ID and BOT_SENDER_ID from --config flag into .env to skip --config in the future
+python3 bot.py  # runs using .env variables
 ```
 
-# Flags
+### Flags
 
 Usage: `python3 bot.py [OPTION]`
 
 Options:
 `python3 bot.py --help` Display help message
+`python3 bot.py --config "Respondent Name"` Configures the chatbot to respond to the person whos name is specified. Can be the bot itself
 `python3 bot.py --test` Test the bot by sending a message to the group
 `python3 bot.py --debug` Print debug messages
+`python3 bot.py --respondall` Causes the bot to respond to all users. Good morning/good night works as expected
+`python3 bot.py --nosend` Prohibits the bot from sending messages to the chat. Best used with --debug
+`python3 bot.py --self-reply` Allows the bot to respond to itself. Warning: This option may get weird
 
 ## Submission
 
