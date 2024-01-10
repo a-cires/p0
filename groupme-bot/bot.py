@@ -16,10 +16,11 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 SENDER_ID = os.getenv("SENDER_ID")
 LAST_MESSAGE_ID = None
 DEBUG = os.getenv("DEBUG", "").lower() == "true"
-RESPOND_ALL = os.getenv("RESPOND_ALL", "").lower == "true"
+RESPOND_ALL = os.getenv("RESPOND_ALL", "").lower() == "true"
 BOT_SENDER_ID = os.getenv("BOT_SENDER_ID")
 NO_SEND = os.getenv("NO_SEND", "").lower() == "true"
 SELF_REPLY = os.getenv("SELF_REPLY", "").lower() == "true"
+BOT_BATTLE = os.getenv("BOT_BATTLE", "").lower() == "true"
 
 
 def send_message(text, attachments=None):
@@ -90,8 +91,14 @@ def process_message(message, messages):
         response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=convert_messages(messages))
+        print("Responding to user {} with message: {}".format(message["name"], response.choices[0].message.content))
         send_message(response.choices[0].message.content)
     elif message["sender_id"] == BOT_SENDER_ID and SELF_REPLY:
+        response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=convert_messages(messages))
+        send_message(response.choices[0].message.content)
+    elif BOT_BATTLE and message["sender_type"] == "bot" and SELF_REPLY:
         response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=convert_messages(messages))
@@ -115,7 +122,7 @@ def convert_messages(messages):
                 content = message['text']
         else:
             role = "user"
-            content = f"{message['name']}: {message['text']}"
+            content = f"{message['sender_type']}-{message['name']}: {message['text']}"
         converted.append({"role": role, "content": content})
     return converted
 
@@ -146,6 +153,7 @@ def main():
 \t--respondall\t\tBot responds to anyone in the group. good morning/good night works as expected
 \t--nosend\t\tProhibits bot from sending messages. Best used with --debug
 \t--self-reply\t\tAllows the bot to respond to itself. Warning: This may get weird.
+\t--bot-battle\t\tAllows the bot to respond to other bots.
 
 Hint: You can also add these options to your .env file as DEBUG=True, RESPOND_ALL=True, NO_SEND=True, SENDER_ID=#####, etc. to skip this step next time.
 Hint: Try running python3 bot.py --config \"Robotto v2\" for some wacky fun.""")
@@ -198,6 +206,9 @@ Hint: Try running python3 bot.py --config \"Robotto v2\" for some wacky fun.""")
             elif sys.argv[i] == "--self-reply":
                 print("Warning: Bot will respond to itself. This may get weird.")
                 SELF_REPLY = True
+            elif sys.argv[i] == "--bot-battle":
+                print("Warning: Bot will respond to other bots.")
+                BOT_BATTLE = True
                 
     if not found_user:
         SENDER_ID = os.getenv("SENDER_ID")
@@ -212,6 +223,7 @@ Hint: Try running python3 bot.py --config \"Robotto v2\" for some wacky fun.""")
         print("Self-reply: " + str(SELF_REPLY))
         print("RESPOND_ALL: " + str(RESPOND_ALL))
         print("NO_SEND: " + str(NO_SEND))
+        print("BOT_BATTLE: " + str(BOT_BATTLE))
 
     # this is an infinite loop that will try to read (potentially) new messages every 10 seconds, but you can change this to run only once or whatever you want
     while True:
