@@ -84,7 +84,9 @@ def process_message(message, messages):
         model="gpt-3.5-turbo",
         messages=convert_messages(messages))
         send_message(response.choices[0].message.content)
-        if "let's go to sleep" in text.lower():
+        if "go to sleep" in text.lower():
+            if DEBUG:
+                print("Exiting...")
             return True
     # Respond to all messages
     elif RESPOND_ALL and message["sender_type"] == "user":
@@ -102,7 +104,10 @@ def process_message(message, messages):
         response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=convert_messages(messages))
-        send_message(response.choices[0].message.content)
+        if SELF_REPLY and message["sender_id"] == BOT_SENDER_ID:
+            send_message(response.choices[0].message.content)
+        elif message["sender_id"] != BOT_SENDER_ID:
+            send_message(response.choices[0].message.content)
 
     LAST_MESSAGE_ID = message["id"]
     return False
@@ -135,6 +140,7 @@ def main():
     global BOT_SENDER_ID
     global NO_SEND
     global SELF_REPLY
+    global BOT_BATTLE
     first = True
     found_user = False
 
@@ -237,7 +243,7 @@ Hint: Try running python3 bot.py --config \"Robotto v2\" for some wacky fun.""")
         else:
             for message in reversed(messages):
                 if process_message(message, messages):
-                    return
+                    exit()
 
         time.sleep(10)
 
